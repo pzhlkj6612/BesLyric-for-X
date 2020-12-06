@@ -65,14 +65,14 @@ private:
     static void init_options(OptionsContext *o);
 
 
-    void buildOptionContent(OptionParseContext* octx);  //模拟 split_commandline 构建 OptionParseContext
+    int buildOptionContent(OptionParseContext* octx);  //模拟 split_commandline 构建 OptionParseContext
 
-    void init_parse_context(OptionParseContext *octx,
+    int init_parse_context(OptionParseContext *octx,
                             const OptionGroupDef *groups, int nb_groups);
 
     void add_input_streams(OptionsContext *o, AVFormatContext *ic);
 
-    int open_files(OptionGroupList *l, bool isInput);
+    int open_files(OptionGroupList *l, bool isInput)throw();
     int open_input_file(OptionsContext *o, const char *filename);
     int open_output_file(OptionsContext *o, const char *filename);
 
