@@ -551,6 +551,8 @@ void SubPageMaking::finishMaking()
     {
         isMaking = false;
 
+        pause();
+
         lyricMaker.finishMaking();
 
         if(lyricMaker.isResultLrcEmpty())
