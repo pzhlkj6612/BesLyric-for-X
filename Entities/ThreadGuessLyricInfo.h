@@ -250,9 +250,9 @@ protected:
     //从网易云接口分析前个字符串是否为歌手
     bool GuessWhetherFirstArtistFromNetease(QString& strFirst, QString& strSecond)
     {
-        QTextCodec *utf8 = QTextCodec::codecForName("utf-8");
-        QByteArray encodedFirst = utf8->fromUnicode(strFirst).toPercentEncoding();
-        QByteArray encodedSecond = utf8->fromUnicode(strSecond).toPercentEncoding();
+        QStringEncoder utf8{QStringConverter::Utf8};
+        QByteArray encodedFirst = QUrl::toPercentEncoding(utf8.encode(strFirst).data);
+        QByteArray encodedSecond = QUrl::toPercentEncoding(utf8.encode(strSecond).data);
         QByteArray queryData;
         queryData.append("csrf_token=&s="+encodedFirst+"+"+ encodedSecond +"&type=1&offset=0&total=True&limit=20");
 

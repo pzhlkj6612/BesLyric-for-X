@@ -1,0 +1,273 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+env:
+  VERSION_NUMBER: 3.2.0
+  GIT_COMMIT: ${{ github.sha }}
+  QT_VERSION: 6.5.3
+
+jobs:
+  config:
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+
+    outputs:
+      # if the "master" branch updates, publish continuous releases
+      make_continuous_release: ${{ steps.the_step.outputs.continuous }}
+      # if new tag created, publish versioning releases
+      make_versioning_release: ${{ steps.the_step.outputs.versioning }}
+
+    steps:
+      - name: The step
+        id: the_step
+        run: |
+          set -ex
+
+          echo 'continuous=${{ github.ref_type == 'tag' || (github.ref_type == 'branch' && github.ref_name == 'master') }}' >> "$GITHUB_OUTPUT"
+          echo 'versioning=${{ github.ref_type == 'tag' }}' >> "$GITHUB_OUTPUT"
+
+  build_windows:
+    runs-on: windows-2022
+    timeout-minutes: 10
+
+    env:
+      B4X_DEP_PATH: ${{ github.workspace }}\.b4x_dep
+      DOWNLOAD_DIR_PATH: ${{ github.workspace }}\.download_dir
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - toolchain: mingw
+            qt_arch: win64_mingw
+            qt_tools: "tools_mingw1310,qt.tools.win64_mingw1310"
+          - toolchain: msvc
+            qt_arch: win64_msvc2019_64
+            qt_tools: ""
+
+    steps:
+      - uses: actions/checkout@v5.0.0
+        with:
+          submodules: recursive
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@d325aaf2a8baeeda41ad0b5d39f84a6af9bcf005  # v4.3.0
+        with:
+          version: ${{ env.QT_VERSION }}
+          target: desktop
+          arch: ${{ matrix.qt_arch }}
+          cache: true
+          tools: ${{ matrix.qt_tools }}
+
+      - name: Configure MSVC
+        if: ${{ matrix.toolchain == 'msvc' }}
+        uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756  # v1.13.0
+        with:
+          arch: 'x64'
+          toolset: '14.29'  # v142
+
+      - name: Cache development environment
+        uses: actions/cache@v4.3.0
+        id: cache_dev_env
+        with:
+          path: |
+            ${{ env.B4X_DEP_PATH }}
+            ${{ env.DOWNLOAD_DIR_PATH }}
+          key: cache_dev_env-${{ runner.os }}-${{ matrix.toolchain }}-${{ hashFiles('./.github/resources/windows.ps1', './.github/workflows/ci.yml') }}
+
+      # set env:
+      #   - PACKAGE_ZIP_FILE_PATH
+      #   - PACKAGE_INNOSETUP_FILE_PATH
+      #   - PACKAGE_EVB_FILE_PATH
+      - name: Init env, build and package
+        shell: powershell
+        run: |
+          $ourArgs = @{
+            VERSION_NUMBER = '${{ env.VERSION_NUMBER }}'
+            GIT_COMMIT = '${{ env.GIT_COMMIT }}'
+
+            GITHUB_ENV = $Env:GITHUB_ENV
+
+            B4X_DEP_PATH = '${{ env.B4X_DEP_PATH }}'
+            DOWNLOAD_DIR_PATH = '${{ env.DOWNLOAD_DIR_PATH }}'
+
+            TOOLCHAIN = '${{ matrix.toolchain }}'
+            SKIP_DOWNLOAD = ${{ format('${0}', steps.cache_dev_env.outputs.cache-hit == 'true') }}
+            SKIP_INNOSETUP = ${{ format('${0}', matrix.toolchain == 'msvc') }}
+            SKIP_EVB = ${{ format('${0}', matrix.toolchain == 'msvc') }}
+          }
+          .\.github\resources\windows.ps1 @ourArgs
+
+      - name: Upload Zip
+        uses: actions/upload-artifact@v5.0.0
+        with:
+          if-no-files-found: error
+          name: "windows-${{ matrix.toolchain }}-portable"
+          path: "${{ env.PACKAGE_ZIP_FILE_PATH }}"
+          compression-level: 0
+
+      - name: Upload Inno Setup installer
+        if: ${{ matrix.toolchain == 'mingw' }}
+        uses: actions/upload-artifact@v5.0.0
+        with:
+          if-no-files-found: error
+          name: "windows-${{ matrix.toolchain }}-setup"
+          path: "${{ env.PACKAGE_INNOSETUP_FILE_PATH }}"
+          compression-level: 0
+
+      - name: Upload Enigma Virtual Box portable exe
+        if: ${{ matrix.toolchain == 'mingw' }}
+        uses: actions/upload-artifact@v5.0.0
+        with:
+          if-no-files-found: error
+          name: "windows-${{ matrix.toolchain }}-allinone"
+          path: "${{ env.PACKAGE_EVB_FILE_PATH }}"
+          compression-level: 9
+
+  build_linux:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v5.0.0
+        with:
+          submodules: recursive
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@d325aaf2a8baeeda41ad0b5d39f84a6af9bcf005  # v4.3.0
+        with:
+          version: ${{ env.QT_VERSION }}
+          target: desktop
+          cache: true
+
+      # set env: PACKAGE_APPIMAGE_FILE_PATH
+      - name: Init env, build and package
+        run: bash ./.github/resources/linux.sh
+
+      - name: Upload AppImage
+        uses: actions/upload-artifact@v5.0.0
+        with:
+          if-no-files-found: error
+          name: "linux-appimage"
+          path: "${{ env.PACKAGE_APPIMAGE_FILE_PATH }}"
+          compression-level: 0
+
+  build_macos:
+    runs-on: macos-15-intel
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v5.0.0
+        with:
+          submodules: recursive
+
+      # Choose the latest supported SDK
+      #   https://doc.qt.io/qt-5/macos.html#supported-versions
+      #   https://github.com/actions/runner-images/blob/main/images/macos/macos-11-Readme.md#xcode
+      - name: Use oldest Xcode Command Line Tools
+        run: |
+          set -ex
+
+          xcode-select --print-path
+          clang++ -v
+
+          sudo xcode-select --switch '/Applications/Xcode_16.4.app'
+          xcode-select --print-path
+          clang++ -v
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@d325aaf2a8baeeda41ad0b5d39f84a6af9bcf005  # v4.3.0
+        with:
+          version: ${{ env.QT_VERSION }}
+          target: desktop
+          cache: true
+
+      # set env: PACKAGE_DMG_FILE_PATH
+      - name: Init env, build and package
+        run: bash ./.github/resources/macos.sh
+
+      - name: Upload dmg
+        uses: actions/upload-artifact@v5.0.0
+        with:
+          if-no-files-found: error
+          name: "macos-dmg"
+          path: "${{ env.PACKAGE_DMG_FILE_PATH }}"
+          compression-level: 0
+
+  make_release:
+    if: ${{ needs.config.outputs.make_continuous_release == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    needs:
+      - build_windows
+      - build_linux
+      - build_macos
+      - config
+
+    env:
+      DOWNLOAD_DIR_PATH: ${{ github.workspace }}/.download_dir
+
+    steps:
+      # be careful! do not ovverwrite anything
+      - name: Download artifacts
+        uses: actions/download-artifact@v5
+        with:
+          path: ${{ env.DOWNLOAD_DIR_PATH }}
+          pattern: '{windows-mingw-setup,linux-appimage,macos-dmg}'
+          merge-multiple: true
+
+      - name: Inspect downloaded files
+        run: |
+          set -ex
+
+          find '${{ env.DOWNLOAD_DIR_PATH }}' -type f -exec stat {} \;
+
+      - name: Delete old continuous releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -ex
+
+          # https://cli.github.com/manual/gh_release
+          if gh --repo '${{ github.repository }}' release view 'continuous'; then
+            gh --repo '${{ github.repository }}' release delete 'continuous' --cleanup-tag --yes
+
+            while gh --repo '${{ github.repository }}' release view 'continuous'; do
+              echo 'the release is still there'
+              sleep 5
+            done
+          fi
+
+      - name: Publish a continuous release
+        uses: softprops/action-gh-release@6da8fa9354ddfdc4aeace5fc48d7f679b5214090  # v2.4.1
+        with:
+          name: Continuous
+          tag_name: continuous
+          make_latest: false
+          prerelease: true
+          generate_release_notes: false
+          draft: false
+          body: |
+            Test only.
+          files: |
+            ${{ env.DOWNLOAD_DIR_PATH }}/**
+
+      - name: Publish a draft versioning release
+        if: ${{ needs.config.outputs.make_versioning_release == 'true' }}
+        uses: softprops/action-gh-release@6da8fa9354ddfdc4aeace5fc48d7f679b5214090  # v2.4.1
+        with:
+          make_latest: true
+          prerelease: false
+          generate_release_notes: true
+          draft: true  # humans will compose release notes.
+          files: |
+            ${{ env.DOWNLOAD_DIR_PATH }}/**

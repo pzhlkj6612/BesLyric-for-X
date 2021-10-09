@@ -6,7 +6,6 @@
 #include <QMessageBox>
 #include <QPainter>
 #include <QStyleOption>
-#include <QDesktopWidget>
 #include <QToolTip>
 #include <QProxyStyle>
 
@@ -152,7 +151,7 @@ bool BesLListButtonDelegate::editorEvent(QEvent *event, QAbstractItemModel *mode
 
                 //if(i == 2 && )
 
-                QToolTip::showText(pEvent->globalPos(), m_list.at(i));
+                QToolTip::showText(pEvent->globalPosition().toPoint(), m_list.at(i));
 
                 break;
             }

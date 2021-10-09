@@ -26,7 +26,7 @@ void BoxPagePreviewLyric::initLayout()
     labelArtist = new QLabel(widgetMainPreviewLyric);
 
     QVBoxLayout* layoutMain = new QVBoxLayout(this);
-    layoutMain->setMargin(0);
+    layoutMain->setContentsMargins(0, 0, 0, 0);
     layoutMain->addWidget(widgetMainPreviewLyric);
 
 }

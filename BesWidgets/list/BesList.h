@@ -36,7 +36,7 @@ protected:
 
     virtual QSize sizeHint() const{return QSize(220,35);}   //默认宽度是256，和左侧列表250出现垂直滚动条时"挤压"，调小些
 
-    virtual void enterEvent(QEvent* event);
+    virtual void enterEvent(QEnterEvent* event);
     virtual void leaveEvent(QEvent* event);
 
     virtual void startDrag(Qt::DropActions supportedActions);

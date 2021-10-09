@@ -8,7 +8,6 @@
 #include <QMutex>
 #include <BesMessageBox.h>
 #include <QMutexLocker>
-#include <QRegExp>
 #include <QStringList>
 #include "NetAccess.h"
 #include "SettingManager.h"

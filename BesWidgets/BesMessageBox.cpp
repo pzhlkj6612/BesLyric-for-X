@@ -75,7 +75,7 @@ void BesMessageBox::initLayout()
     widgetMessageBoxContainer0->setObjectName("widgetMessageBoxContainer");
 
     QVBoxLayout * vMainLayout0 = new QVBoxLayout(this);
-    vMainLayout0->setMargin(0); //边缘的缩放会成问题，放大缩小不要了
+    vMainLayout0->setContentsMargins(0, 0, 0, 0); //边缘的缩放会成问题，放大缩小不要了
     vMainLayout0->setSpacing(0);
 
     //由于设置样式要求有边缘，再内嵌一个QWidget
@@ -83,7 +83,7 @@ void BesMessageBox::initLayout()
     widgetMessageBoxContainer->setObjectName("widgetMessageBoxContainer");
 
     QVBoxLayout * vMainLayout = new QVBoxLayout(widgetMessageBoxContainer0);
-    vMainLayout->setMargin(1);
+    vMainLayout->setContentsMargins(1, 1, 1, 1);
     vMainLayout->setSpacing(0);
     vMainLayout->addWidget(widgetMessageBoxContainer);
 
@@ -104,7 +104,7 @@ void BesMessageBox::initLayout()
     widgetMessageBottom->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
     QVBoxLayout * vLayout = new QVBoxLayout(widgetMessageBoxContainer);
-    vLayout->setMargin(0);
+    vLayout->setContentsMargins(0, 0, 0, 0);
     vLayout->setSpacing(0);
     vLayout->addWidget(widgetMessageTop);
     vLayout->addWidget(widgetMessageMiddle);

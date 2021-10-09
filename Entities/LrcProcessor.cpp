@@ -4,7 +4,7 @@
 
 #include "LrcProcessor.h"
 #include "UnicodeReader.h"
-#include <QRegExp>
+#include <QRegularExpression>
 #include <QFile>
 
 bool LrcProcessor::LoadFromFile(QString lyricFilePath)
@@ -23,7 +23,7 @@ bool LrcProcessor::LoadFromFile(QString lyricFilePath)
     if(!unicodeReader.ReadFromFile(lyricFilePath,content))
         return false;
 
-    QRegExp sepRegExp = QRegExp("\n|\r");               //linux\mac\windows 换行符号
+    QRegularExpression sepRegExp{"\n|\r"};               //linux\mac\windows 换行符号
     QStringList lineList = content.split(sepRegExp);
 
     for(auto& line: lineList)
@@ -73,8 +73,8 @@ void LrcProcessor::LoadFromRawLines(QVector<QString> lines)
 
         QStringList infoLabels;     //储存非歌词行的信息 [ar:歌手名] 、[offset:时间补偿值] 等
 
-        QRegExp rx_time("(\\[\\s*\\d+\\s*:\\s*\\d+(\\.\\d+)?\\s*\\])");  //匹配时间标签
-        QRegExp rx_other("(\\[\\s*\\w+\\s*:\\s*\\w+\\s*\\])");  //匹配其他标签
+        QRegularExpression rx_time{"(\\[\\s*\\d+\\s*:\\s*\\d+(\\.\\d+)?\\s*\\])"};  //匹配时间标签
+        QRegularExpression rx_other{"(\\[\\s*\\w+\\s*:\\s*\\w+\\s*\\])"};  //匹配其他标签
         for(auto& line:lines)
         {
             QStringList timeList;
@@ -82,21 +82,25 @@ void LrcProcessor::LoadFromRawLines(QVector<QString> lines)
             int textPos = 0; //非标签文本开始的位置
 
             //尝试匹配时间标签
-            int pos = 0;
-            while ((pos = rx_time.indexIn(line, pos)) != -1) {
-                timeList << rx_time.cap(1);
-                pos += rx_time.matchedLength();
-
-                textPos = pos;
+            while (true) {
+                auto match = rx_time.match(line, textPos);
+                if (match.hasMatch()) {
+                    timeList << match.captured(1);
+                    textPos = match.capturedEnd(1);
+                } else {
+                    break;
+                }
             }
 
             //尝试匹配其他标签
-            int pos2 = 0;
-            while ((pos2 = rx_other.indexIn(line, pos2)) != -1) {
-                infoLabels << rx_other.cap(1);
-                pos2 += rx_other.matchedLength();
-
-                textPos = pos2;
+            while (true) {
+                auto match = rx_other.match(line, textPos);
+                if (match.hasMatch()) {
+                    infoLabels << match.captured(1);
+                    textPos = match.capturedEnd(1);
+                } else {
+                    break;
+                }
             }
 
             QString strLeft; //剩下的字符串
@@ -198,8 +202,10 @@ QString LrcProcessor::ToLrcLine(QPair<int, QString> timeLine)
     int s = pos % 60;
     int m = pos / 60;
 
-    QString timeLabel;
-    timeLabel.sprintf("[%.2d:%.2d.%.3d]", m, s, ms);
+    auto timeLabel = QString{"[%1:%2.%3]"}
+        .arg(m, 2, 10, QLatin1Char{'0'})
+        .arg(s, 2, 10, QLatin1Char{'0'})
+        .arg(ms, 3, 10, QLatin1Char{'0'});
 
     return timeLabel + timeLine.second;
 }

@@ -222,7 +222,11 @@ void SkinBoxWidget::initLayout()
     skinStack->setCurrentIndex(0);
 
     QVBoxLayout* vMainLayout = new QVBoxLayout(mainLayer);
-    vMainLayout->setMargin(2* BesScaleUtil::scale());
+    vMainLayout->setContentsMargins(
+        2 * BesScaleUtil::scale(),
+        2 * BesScaleUtil::scale(),
+        2 * BesScaleUtil::scale(),
+        2 * BesScaleUtil::scale());
     vMainLayout->setSpacing(5* BesScaleUtil::scale());
     vMainLayout->addLayout(layoutButtons);
     vMainLayout->addLayout(skinStack);
@@ -301,11 +305,9 @@ void SkinBoxWidget::initSliderGrooveColor()
         QColor rgbColor = colorFromHsl.toRgb();
         rgbColor = colorSetHsl.toRgb();
 
-        int r,g,b;
-        rgbColor.getRgb(&r,&g,&b);
-
-        QString strStop;
-        strStop.sprintf("stop:%.3f rgb(%d,%d,%d)", PosistionFactor,r,g,b);
+        auto strStop = QString{"stop:%1 %2"}
+            .arg(PosistionFactor, 0, 'g', -3)
+            .arg(rgbColor.name());
 
         if(i != nSegCount)
             strStop += ",";
@@ -329,11 +331,7 @@ void  SkinBoxWidget::signalToCustomSkin()
     int l = SliderLightness->value();
     QColor currentColor = QColor::fromHsl(h,255,l);
 
-    int r,g,b;
-    currentColor.getRgb(&r,&g,&b);
-
-    QString colorStr;
-    colorStr.sprintf("#%.2x%.2x%.2x",r,g,b);
+    QString colorStr = currentColor.name();
     emit(signalSetCustomSkin(colorStr));
 }
 

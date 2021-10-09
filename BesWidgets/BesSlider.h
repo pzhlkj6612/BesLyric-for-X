@@ -42,12 +42,8 @@ protected:
         qDebug()<<"BesSlider::mouseMoveEvent: "<<ev->pos();
 
         // 通过偏移计算 handle 的正确位置
-#if QT_VERSION >= 0x050800
-        ev->setLocalPos(ev->pos() += click_pos_offset);
-#else
-        QMouseEvent new_ev(ev->type(), ev->pos() += click_pos_offset, ev->button(), ev->buttons(), ev->modifiers());
+        QMouseEvent new_ev(ev->type(), ev->pos() + click_pos_offset, ev->globalPosition() + click_pos_offset, ev->button(), ev->buttons(), ev->modifiers());
         ev = &new_ev;
-#endif
 
         // 如果需要在 enableMouseEvt == false 时，鼠标移动到 handle 上也改变鼠标样式，就去掉关于 enableMouseEvt 的判断。
         if (enableMouseEvt && getHandleRect().contains(ev->pos())) {
@@ -97,12 +93,8 @@ protected:
             qDebug()<<"click_pos_offset:"<<click_pos_offset;
 
             //用 handle 中心点代替实际点击位置，避免在点击到 handle 非中心位置时移动 handle，使 handle 看起来是能在任何位置被拖动的
-#if QT_VERSION >= 0x050800
-            ev->setLocalPos(center_of_handle);
-#else
-            QMouseEvent new_ev(ev->type(), center_of_handle, ev->button(), ev->buttons(), ev->modifiers());
+            QMouseEvent new_ev(ev->type(), center_of_handle, ev->globalPosition() + click_pos_offset, ev->button(), ev->buttons(), ev->modifiers());
             ev = &new_ev;
-#endif
         }else{
             qDebug() << "handle not clicked";
 

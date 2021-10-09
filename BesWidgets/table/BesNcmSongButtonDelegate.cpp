@@ -6,7 +6,6 @@
 #include <QMessageBox>
 #include <QPainter>
 #include <QStyleOption>
-#include <QDesktopWidget>
 #include <QToolTip>
 #include <QProxyStyle>
 
@@ -157,7 +156,7 @@ bool BesNcmSongButtonDelegate::editorEvent(QEvent *event, QAbstractItemModel *mo
 
             //if(i == 2 && )
 
-            QToolTip::showText(pEvent->globalPos(), m_list.at(i));
+            QToolTip::showText(pEvent->globalPosition().toPoint(), m_list.at(i));
 
             break;
         }

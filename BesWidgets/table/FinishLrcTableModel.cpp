@@ -58,7 +58,10 @@ QVariant FinishLrcTableModel::data(const QModelIndex &index, int role) const
             nTime /= 60;
             int nMinute = nTime;
 
-            return QString().sprintf("%02d:%02d.%03d",nMinute, nSecond, nMiliSecond);
+            return QString{"%1:%2.%3"}
+                .arg(nMinute, 2, 10, QLatin1Char{'0'})
+                .arg(nSecond, 2, 10, QLatin1Char{'0'})
+                .arg(nMiliSecond, 3, 10, QLatin1Char{'0'});
         }
         case 1:
             return pLrcLines->at(nRow).second;

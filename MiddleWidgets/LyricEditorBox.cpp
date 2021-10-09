@@ -20,7 +20,7 @@ void LyricEditorBox::initLayout()
     widgetMessageBoxContainer->setObjectName("widgetMessageBoxContainer");
 
     QVBoxLayout * vMainLayout0 = new QVBoxLayout(this);
-    vMainLayout0->setMargin(8);
+    vMainLayout0->setContentsMargins(8, 8, 8, 8);
     vMainLayout0->setSpacing(0);
 
     //由于设置样式要求有边缘，再内嵌一个QWidget
@@ -29,7 +29,7 @@ void LyricEditorBox::initLayout()
     widgetBaseContainer->setMouseTracking(true);
 
     QVBoxLayout * vMainLayout = new QVBoxLayout(widgetMessageBoxContainer);
-    vMainLayout->setMargin(1);
+    vMainLayout->setContentsMargins(1, 1, 1, 1);
     vMainLayout->setSpacing(0);
     vMainLayout->addWidget(widgetBaseContainer);
 
@@ -53,7 +53,7 @@ void LyricEditorBox::initLayout()
     widgetFooter->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
     QVBoxLayout * vLayout = new QVBoxLayout(widgetBaseContainer);
-    vLayout->setMargin(0);
+    vLayout->setContentsMargins(0, 0, 0, 0);
     vLayout->setSpacing(0);
     vLayout->addWidget(widgetHeader);
     vLayout->addWidget(widgetBody);

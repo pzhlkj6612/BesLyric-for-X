@@ -5,7 +5,7 @@
 #include <QObject>
 #include <QThread>
 #include <QFileInfo>
-#include <QRegExp>
+#include <QRegularExpression>
 #include <QStringList>
 #include <QSysInfo>
 #include "NetAccess.h"
@@ -115,22 +115,13 @@ protected:
     {
         // > . . . <
 
-        QRegExp rx(">(\\d+\\.\\d+\\.\\d+\\.\\d+)<");
+        QRegularExpression rx{">(\\d+\\.\\d+\\.\\d+\\.\\d+)<"};
+        auto match = rx.match(buffer);
 
-        QStringList matchedList;  //所有匹配的地址列表
-
-        //尝试匹配时间标签
-        int pos = 0;
-        while ((pos = rx.indexIn(buffer, pos)) != -1) {
-            matchedList << rx.cap(1);
-            pos += rx.matchedLength();
-        }
-
-        if(matchedList.size() == 0)
+        if (!match.hasMatch()) {
             return false;
-        else
-        {
-            ip = matchedList.at(0);
+        } else {
+            ip = match.captured(1);
             return true;
         }
     }

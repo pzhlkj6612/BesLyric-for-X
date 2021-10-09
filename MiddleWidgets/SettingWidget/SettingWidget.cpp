@@ -35,7 +35,7 @@ void SettingWidget::initLayout()
     QHBoxLayout* hLayout = new QHBoxLayout(this);
     hLayout->addWidget(settingLeftNavigator);
     hLayout->addWidget(settingScrollPanel);
-    hLayout->setMargin(0);
+    hLayout->setContentsMargins(0, 0, 0, 0);
 }
 
 void SettingWidget::initConnection()

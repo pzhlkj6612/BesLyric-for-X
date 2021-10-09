@@ -57,7 +57,7 @@ void BesListHeader::initLayout()
     btnToggleList->setChecked(false);
 
     QHBoxLayout* hLayout = new QHBoxLayout(this);
-    hLayout->setMargin(0);
+    hLayout->setContentsMargins(0, 0, 0, 0);
     hLayout->setSpacing(0);
     hLayout->addSpacerItem(new QSpacerItem(15* BesScaleUtil::scale(),20,QSizePolicy::Fixed, QSizePolicy::Fixed));
     hLayout->addWidget(labelListHeaderTitle);
@@ -93,7 +93,7 @@ void BesListHeader::OnMakeSureHeaderChecking()
 
 
 
-void BesListHeader::enterEvent(QEvent *event)
+void BesListHeader::enterEvent(QEnterEvent *event)
 {
     setCursor(QCursor(Qt::PointingHandCursor));
     QWidget::enterEvent(event);

@@ -45,7 +45,7 @@ void BesFramelessWidget::mousePressEvent(QMouseEvent *event)
         if(dir != NONE) {
             this->mouseGrabber();
         } else {
-            dragPosition = event->globalPos() - this->frameGeometry().topLeft();
+            dragPosition = event->globalPosition().toPoint() - this->frameGeometry().topLeft();
         }
         break;
     case Qt::RightButton:
@@ -57,7 +57,7 @@ void BesFramelessWidget::mousePressEvent(QMouseEvent *event)
 
 void BesFramelessWidget::mouseMoveEvent(QMouseEvent *event)
 {
-    QPoint gloPoint = event->globalPos();
+    QPoint gloPoint = event->globalPosition().toPoint();
     QRect rect = this->rect();
     QPoint tl = mapToGlobal(rect.topLeft());
     QPoint rb = mapToGlobal(rect.bottomRight());
@@ -120,7 +120,7 @@ void BesFramelessWidget::mouseMoveEvent(QMouseEvent *event)
             }
             this->setGeometry(rMove);
         } else {
-            move(event->globalPos() - dragPosition);
+            move(event->globalPosition().toPoint() - dragPosition);
             event->accept();
         }
     }
