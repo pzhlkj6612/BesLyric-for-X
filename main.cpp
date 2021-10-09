@@ -32,8 +32,11 @@ int main(int argc, char *argv[])
     CreateMutex(NULL, FALSE, TEXT("Global\\AppMutex_{7ACD3BB0-DE1F-416E-A8DC-5C6EE4AECB50}"));
 #endif
 
-#if defined(Q_OS_WIN) || defined(Q_OS_LINUX)
-    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+#ifdef Q_OS_LINUX
+    // frameless window cannot move by themselves on Wayland.
+    // ref: Wayland Peculiarities § Window and Dialog Widgets | Qt Widgets | Qt 6
+    //   https://doc.qt.io/qt-6/application-windows.html#wayland-peculiarities
+    qputenv("QT_QPA_PLATFORM", "xcb");
 #endif
 
     MyApplication app(argc, argv);

@@ -73,11 +73,11 @@ void PageMain::initLayout()
     subPageDownloadLyric = new SubPageDownloadLyric(subPageContainer);
 
     QHBoxLayout* hLayoutMain = new QHBoxLayout(this);
-    hLayoutMain->setMargin(0);
+    hLayoutMain->setContentsMargins(0, 0, 0, 0);
     hLayoutMain->setSpacing(0);
 
     QVBoxLayout* vLayoutButtons = new QVBoxLayout(leftBoardMainPage);                //左侧按钮垂直布局
-    vLayoutButtons->setMargin(0);
+    vLayoutButtons->setContentsMargins(0, 0, 0, 0);
     vLayoutButtons->setSpacing(0);
     vLayoutButtons->addWidget(btnMakingLyric);
     vLayoutButtons->addWidget(btnDownloadSong);

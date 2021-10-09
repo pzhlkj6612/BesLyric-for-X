@@ -5,7 +5,6 @@
 #include <QObject>
 #include <QVector>
 #include <QString>
-#include <QTextCodec>
 
 class LyricMaker:public QObject
 {

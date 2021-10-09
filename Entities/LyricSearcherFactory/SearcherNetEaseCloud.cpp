@@ -3,7 +3,7 @@
 #include "NetAccess.h"
 #include "LrcProcessor.h"
 #include <QUrlQuery>
-#include <QTextCodec>
+#include <QStringEncoder>
 
 #include<QJsonDocument>
 #include<QJsonObject>
@@ -55,9 +55,9 @@ bool SearcherNetEaseCloud::SearchLyric(QString strSong, QString strArtist, QVect
 //通过使用歌名 和 艺术家名获得 歌曲信息列表
 bool SearcherNetEaseCloud::GetSongListWithNameAndArtist(QString strSong, QString strArtist, QVector< SONGINFO >& vecSongList,QString& strLastResult)
 {
-    QTextCodec *utf8 = QTextCodec::codecForName("utf-8");
-    QByteArray encodedSong = utf8->fromUnicode(strSong).toPercentEncoding();
-    QByteArray encodedArtist = utf8->fromUnicode(strArtist).toPercentEncoding();
+    QStringEncoder utf8{QStringConverter::Encoding::Utf8};
+    QByteArray encodedSong = QUrl::toPercentEncoding(utf8.encode(strSong).data);
+    QByteArray encodedArtist = QUrl::toPercentEncoding(utf8.encode(strArtist).data);
     QByteArray queryData;
     queryData.append("csrf_token=&s="+encodedArtist+"+"+ encodedSong +"&type=1&offset=0&total=True&limit=20");
 

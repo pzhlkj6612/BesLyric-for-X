@@ -4,7 +4,7 @@
 #include "global.h"
 #include <QObject>
 #include <QString>
-#include <QTextCodec>
+#include <QStringDecoder>
 #include <QFile>
 #include <QDebug>
 
@@ -40,21 +40,20 @@ public:
     {
         encoding_type etype = GetFileBufferEncodingType(ba.data(), ba.size());
 
-        QTextCodec *codec;
+        QStringDecoder codec;
 
         switch (etype) {
-        case ENCODING_UNICODE_LITTLE_ENDIAN :codec =QTextCodec::codecForName("UTF-16LE"); break;
-        case ENCODING_UNICODE_BIG_ENDIAN :codec =QTextCodec::codecForName("UTF-16BE"); break;
+        case ENCODING_UNICODE_LITTLE_ENDIAN :codec = QStringDecoder{QStringConverter::Utf16LE}; break;
+        case ENCODING_UNICODE_BIG_ENDIAN :codec = QStringDecoder{QStringConverter::Utf16BE}; break;
         case ENCODING_UTF_8 :
-        case ENCODING_UTF_8_BOM :codec =QTextCodec::codecForName("UTF-8"); break;
+        case ENCODING_UTF_8_BOM :codec = QStringDecoder{QStringConverter::Utf8}; break;
         case ENCODING_ASCII:
         default:
-            codec = QTextCodec::codecForLocale();
+            codec = QStringDecoder{QStringConverter::System};
             break;
         }
 
-        QTextCodec::ConverterState state;
-        QString text = codec->toUnicode( ba.constData(), ba.size(), &state);
+        QString text = codec.decode(ba);
 
         //去掉最后可能存在的 \u0000
         int countOfEndZero = 0;

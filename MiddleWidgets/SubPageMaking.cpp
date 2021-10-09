@@ -28,7 +28,11 @@ SubPageMaking::~SubPageMaking()
 void SubPageMaking::initLayout()
 {
     QVBoxLayout* vLayout = new QVBoxLayout(this);
-    vLayout->setMargin(30 * BesScaleUtil::scale());
+    vLayout->setContentsMargins(
+        30 * BesScaleUtil::scale(),
+        30 * BesScaleUtil::scale(),
+        30 * BesScaleUtil::scale(),
+        30 * BesScaleUtil::scale());
 
     widgetMusicPath = new QWidget(this);
     widgetLyricPath = new QWidget(this);;
@@ -103,8 +107,8 @@ void SubPageMaking::initLayout()
     QHBoxLayout* hLayout1 = new QHBoxLayout(widgetMusicPath);
     QHBoxLayout* hLayout2 = new QHBoxLayout(widgetLyricPath);
     QHBoxLayout* hLayout3 = new QHBoxLayout();
-    hLayout1->setMargin(0);
-    hLayout2->setMargin(0);
+    hLayout1->setContentsMargins(0, 0, 0, 0);
+    hLayout2->setContentsMargins(0, 0, 0, 0);
     hLayout1->addWidget(labelSelectMusic);
     hLayout1->addWidget(editSelectMusic);
     hLayout1->addWidget(btnDownloadMp3);
@@ -351,7 +355,7 @@ void SubPageMaking::initLayout()
     //middleSpacer->changeSize(1,25,QSizePolicy::Ignored,QSizePolicy::Fixed);
 
     QHBoxLayout* hLayout7 = new QHBoxLayout(widgetLyricBoard);
-    hLayout7->setMargin(0);
+    hLayout7->setContentsMargins(0, 0, 0, 0);
     hLayout7->addWidget(labelLine2);
     hLayout7->addWidget(labelDoneMark2);
     hLayout7->addWidget(editMiddleLine);
@@ -371,7 +375,7 @@ void SubPageMaking::initLayout()
     hLayoutLine0->addWidget(labelLine0);
     hLayoutLine0->addWidget(labelDoneMark0);
     hLayoutLine0->addSpacerItem(new QSpacerItem(1,25,QSizePolicy::MinimumExpanding,QSizePolicy::Fixed));
-    hLayoutLine0->setMargin(0);
+    hLayoutLine0->setContentsMargins(0, 0, 0, 0);
     widgetLine0->setLayout(hLayoutLine0);
 
     btnEditBatchLyric = new BesButton(widgetLine4);
@@ -384,7 +388,7 @@ void SubPageMaking::initLayout()
     hLayoutLine4->addWidget(btnEditBatchLyric);
     hLayoutLine4->addSpacerItem(new QSpacerItem(25,25,QSizePolicy::Fixed,QSizePolicy::Fixed));
     hLayoutLine4->addWidget(labelLine4);
-    hLayoutLine4->setMargin(0);
+    hLayoutLine4->setContentsMargins(0, 0, 0, 0);
     widgetLine4->setLayout(hLayoutLine4);
 
 
@@ -854,8 +858,10 @@ void SubPageMaking::updatePos(qint64 pos)
 		int s = pos % 60;
 		int m = pos / 60;
 
-		QString timeLabel;
-		timeLabel.sprintf("%.2d:%.2d.%.3d", m, s, ms);
+		auto timeLabel = QString{"%1:%2.%3"}
+			.arg(m, 2, 10, QLatin1Char{'0'})
+			.arg(s, 2, 10, QLatin1Char{'0'})
+			.arg(ms, 3, 10, QLatin1Char{'0'});
 
 		labelTimeTip->setText(timeLabel);
     }

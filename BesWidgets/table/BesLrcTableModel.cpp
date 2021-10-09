@@ -45,7 +45,7 @@ QVariant BesLrcTableModel::data(const QModelIndex &index, int role) const
         switch(nCol)
         {
         case 0:
-            return QString().sprintf("%02d",(nRow+1));
+            return QString{"%1"}.arg((nRow + 1), 2, 10, QLatin1Char{'0'});
         case 1:
             return info.strSong;
         case 2:

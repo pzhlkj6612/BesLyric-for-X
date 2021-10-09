@@ -41,7 +41,7 @@ void MainWidget::initLayout()
     bottomWidget->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
 
     QVBoxLayout* vLayout = new QVBoxLayout(this);
-    vLayout->setMargin(0);
+    vLayout->setContentsMargins(0, 0, 0, 0);
     vLayout->setSpacing(0);
     vLayout->addWidget(topWidget);
     vLayout->addWidget(middleWidget);

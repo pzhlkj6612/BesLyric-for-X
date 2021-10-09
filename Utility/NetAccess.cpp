@@ -37,7 +37,7 @@ bool NetworkAccess::SyncDownloadString(const QString strUrl, QString &target, QU
     QNetworkReply *reply= manager.get(request);
     QEventLoop loop;
     connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
-    connect(reply, QOverload<QNetworkReply::NetworkError>::of(&QNetworkReply::error), &loop, &QEventLoop::quit);
+    connect(reply, &QNetworkReply::errorOccurred, &loop, &QEventLoop::quit);
     loop.exec();
 
     bool bRet = false;
@@ -79,7 +79,7 @@ bool NetworkAccess::SyncDownloadStringPost(const QString strUrl, QString &strSav
     QNetworkReply *reply= manager.post(request,queryData);
     QEventLoop loop;
     connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
-    connect(reply, QOverload<QNetworkReply::NetworkError>::of(&QNetworkReply::error), &loop, &QEventLoop::quit);
+    connect(reply, &QNetworkReply::errorOccurred, &loop, &QEventLoop::quit);
     loop.exec();
 
     bool bRet = false;

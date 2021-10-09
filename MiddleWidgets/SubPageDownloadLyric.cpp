@@ -414,7 +414,7 @@ void SubPageDownloadLyric::OnLyricResultChanged(LyricSearchResult result)
 
     //显示搜索结果
     nLyricCount += result.vecLyricInfoTotal.size();
-    labelLyricResultTip5->setText(QString().sprintf("，找到%d个歌词文件。",nLyricCount)+strResultTip);
+    labelLyricResultTip5->setText(QString{"，找到%1个歌词文件。"}.arg(nLyricCount) + strResultTip);
     labelLyricResultTip5->setVisible(true);
 
     if(result.vecLyricInfoTotal.size()!=0)
@@ -510,7 +510,9 @@ void SubPageDownloadLyric::OnSaveRawLyric()
                             song +" - "+ artist
                            :artist +" - "+ song;
 
-    localFileName = localFileName.replace(QRegExp("[\\/\\\\\\|\\*\\?<>\\:\"]"), "_"); //将文件不允许出现的字符替换为下划线
+    localFileName = localFileName.replace(
+        QRegularExpression{"[\\/\\\\\\|\\*\\?<>\\:\"]"},
+        "_"); //将文件不允许出现的字符替换为下划线
 
     fileName = editRawLyricPanelSavePath->text() + "/" + localFileName + ".txt";
 
@@ -527,7 +529,7 @@ void SubPageDownloadLyric::OnSaveRawLyric()
         }
 
         QTextStream streamFileOut(&fileOut);
-        streamFileOut.setCodec("UTF-8");
+        streamFileOut.setEncoding(QStringConverter::Encoding::Utf8);
         streamFileOut.setGenerateByteOrderMark(false);
         streamFileOut << content;
         streamFileOut.flush();
@@ -588,7 +590,9 @@ void SubPageDownloadLyric::OnSaveLrcLyric()
                             song +" - "+ artist
                            :artist +" - "+ song;
 
-    localFileName = localFileName.replace(QRegExp("[\\/\\\\\\|\\*\\?<>\\:\"]"), "_"); //将文件不允许出现的字符替换为下划线
+    localFileName = localFileName.replace(
+        QRegularExpression{"[\\/\\\\\\|\\*\\?<>\\:\"]"},
+        "_"); //将文件不允许出现的字符替换为下划线
 
     fileName = editLrcLyricPanelSavePath->text() + "/" + localFileName + ".lrc";
 
@@ -605,7 +609,7 @@ void SubPageDownloadLyric::OnSaveLrcLyric()
         }
 
         QTextStream streamFileOut(&fileOut);
-        streamFileOut.setCodec("UTF-8");
+        streamFileOut.setEncoding(QStringConverter::Encoding::Utf8);
         streamFileOut.setGenerateByteOrderMark(false);
         streamFileOut << content;
         streamFileOut.flush();

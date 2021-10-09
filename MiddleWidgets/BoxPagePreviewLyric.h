@@ -36,7 +36,7 @@ protected:
         }
     }
 
-    virtual void enterEvent(QEvent *e){m_bHover=true;BesButton::enterEvent(e);}//进入事件
+    virtual void enterEvent(QEnterEvent *e){m_bHover=true;BesButton::enterEvent(e);}//进入事件
     virtual void leaveEvent(QEvent *e){m_bHover=false;BesButton::leaveEvent(e);}//离开事件
 
     virtual void mousePressEvent(QMouseEvent* e){BesButton::mousePressEvent(e);}//emit(onSkinClick(m_skinName));
