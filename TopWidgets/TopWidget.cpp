@@ -77,7 +77,7 @@ void TopWidget::initLayout()
     hLayout->addSpacerItem(new QSpacerItem(10,25,QSizePolicy::Fixed,QSizePolicy::Fixed));
 
     QHBoxLayout*  hLayoutWrapper = new QHBoxLayout(this);
-    hLayoutWrapper->setMargin(0);
+    hLayoutWrapper->setContentsMargins(0, 0, 0, 0);
     hLayoutWrapper->addWidget(topWidgetContainer);
 
 }

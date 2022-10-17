@@ -5,7 +5,6 @@
 #include <QMessageBox>
 #include <QPainter>
 #include <QStyleOption>
-#include <QDesktopWidget>
 #include <QToolTip>
 
 #define LRC_LIST_OPERATE_COLUMN 4
@@ -108,7 +107,7 @@ bool BesLrcButtonDelegate::editorEvent(QEvent *event, QAbstractItemModel *model,
                 QApplication::setOverrideCursor(Qt::PointingHandCursor);
 
                 m_nType = 0;
-                QToolTip::showText(pEvent->globalPos(), m_list.at(i));
+                QToolTip::showText(pEvent->globalPosition().toPoint(), m_list.at(i));
 
                 break;
             }

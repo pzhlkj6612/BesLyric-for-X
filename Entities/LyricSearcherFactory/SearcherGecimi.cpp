@@ -5,8 +5,6 @@
 #include<QJsonObject>
 #include<QJsonArray>
 
-#include <QTextCodec>
-
 #include "LrcProcessor.h"
 
 //搜索歌词
@@ -39,11 +37,13 @@ bool SearcherGecimi::SearchLyric(QString strSong, QString strArtist, QVector<Lyr
 
     if(vecLyricLink.size() > vecLyricInfo.size())
     {
-        m_strLastResult.sprintf("共查询到%d条数据，成功下载%d条数据",vecLyricLink.size(),vecLyricInfo.size());
+        m_strLastResult = QString{"共查询到%1条数据，成功下载%2条数据"}
+            .arg(vecLyricLink.size())
+            .arg(vecLyricInfo.size());
     }
     else
     {
-        m_strLastResult.sprintf("成功下载询到的%d条数据",vecLyricInfo.size());
+        m_strLastResult = QString{"成功下载询到的%1条数据"}.arg(vecLyricInfo.size());
     }
 
 	return true;

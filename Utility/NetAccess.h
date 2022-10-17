@@ -10,6 +10,7 @@
 #include <QEventLoop>
 #include <QUrlQuery>
 #include <QQueue>
+#include <QElapsedTimer>
 
 enum DOWNLOAD_FINISH_STATUS{
     NORMAL,
@@ -74,7 +75,7 @@ public:
     QNetworkReply *currentDownload;
 
     QFile output;
-    QTime downloadTime;
+    QElapsedTimer downloadTime;
 
     bool bDownloadResult;
     bool bDownloadFinish;

@@ -5,7 +5,6 @@
 #include <QMessageBox>
 #include <QPainter>
 #include <QStyleOption>
-#include <QDesktopWidget>
 #include <QToolTip>
 
 #define LRC_FINISH_OPERATE_COLUMN 2
@@ -106,7 +105,7 @@ bool FinishLrcButtonDelegate::editorEvent(QEvent *event, QAbstractItemModel *mod
                 QApplication::setOverrideCursor(Qt::PointingHandCursor);
 
                 m_nType = 0;
-                QToolTip::showText(pEvent->globalPos(), m_list.at(i));
+                QToolTip::showText(pEvent->globalPosition().toPoint(), m_list.at(i));
 
                 break;
             }

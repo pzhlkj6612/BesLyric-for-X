@@ -29,7 +29,7 @@ public slots:
     void OnMakeSureHeaderChecking();
 
 protected:
-    virtual void enterEvent(QEvent *event);
+    virtual void enterEvent(QEnterEvent *event);
     virtual void leaveEvent(QEvent *event);
     virtual void mousePressEvent(QMouseEvent* event);
 

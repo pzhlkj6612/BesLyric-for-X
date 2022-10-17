@@ -1,5 +1,6 @@
 ﻿#include "MusicPlayerController.h"
 #include <QDateTime>
+#include <QRandomGenerator>
 #include <QtGlobal>
 
 MusicPlayerController::MusicPlayerController(QObject *parent):QObject(parent)
@@ -90,11 +91,11 @@ void MusicPlayerController::regenerateRandomIndex()
         vecIndex.push_back(i);
 
     QDateTime dateTime = QDateTime();
-    qsrand((unsigned int)dateTime.currentMSecsSinceEpoch());
+    QRandomGenerator randomGenerator{static_cast<quint32>(dateTime.currentMSecsSinceEpoch())};
 
     while(vecIndex.size() != 0)
     {
-        int selected = qrand() % vecIndex.size();
+        int selected = randomGenerator.generate() % vecIndex.size();
         listRandomIndex.push_back(vecIndex.at(selected));
         vecIndex.removeAt(selected);
     }

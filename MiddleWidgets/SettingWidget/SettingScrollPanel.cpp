@@ -149,7 +149,7 @@ void SuScrollPanel::initLayout()
     //下面使用生产的设置单元来初始化控件
     int nSpacing = 0;
     QVBoxLayout* vSettingUnits = new QVBoxLayout(settingUnitContainer);
-    vSettingUnits->setMargin(0);
+    vSettingUnits->setContentsMargins(0, 0, 0, 0);
     vSettingUnits->setSpacing(nSpacing);
 
     int nTotalHeight = (settings.size() <= 1) ? 0 : ((settings.size()-1)* nSpacing);
@@ -170,7 +170,7 @@ void SuScrollPanel::initLayout()
     settingUnitContainer->setMaximumHeight(nTotalHeight);
 
     QGridLayout* mainLayout = new QGridLayout(this);
-    mainLayout->setMargin(0);
+    mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->addWidget(scrollAreaSetting);
 }
 

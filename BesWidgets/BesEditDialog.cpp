@@ -48,7 +48,7 @@ void BesEditDialog::initLayout()
     widgetMessageBoxContainer->setObjectName("widgetBody");
 
     QVBoxLayout * vMainLayout0 = new QVBoxLayout(this);
-    vMainLayout0->setMargin(8);
+    vMainLayout0->setContentsMargins(8, 8, 8, 8);
     vMainLayout0->setSpacing(0);
     vMainLayout0->addWidget(widgetMessageBoxContainer);
 
@@ -91,7 +91,11 @@ void BesEditDialog::initLayout()
     hLayout->addSpacerItem(new QSpacerItem(20* BesScaleUtil::scale(),20,QSizePolicy::MinimumExpanding,QSizePolicy::Fixed));
 
     QVBoxLayout* vMainLayout = new QVBoxLayout(widgetMessageBoxContainer);
-    vMainLayout->setMargin(32* BesScaleUtil::scale());
+    vMainLayout->setContentsMargins(
+        32 * BesScaleUtil::scale(),
+        32 * BesScaleUtil::scale(),
+        32 * BesScaleUtil::scale(),
+        32 * BesScaleUtil::scale());
     vMainLayout->setSpacing(25* BesScaleUtil::scale());
     vMainLayout->addWidget(labelAddItemNameTip);
     vMainLayout->addWidget(editAddItemName);

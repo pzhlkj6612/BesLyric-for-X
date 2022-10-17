@@ -101,7 +101,7 @@ void BottomWidget::initLayout()
     hLayout->addSpacerItem(new QSpacerItem(15,20,QSizePolicy::Fixed,QSizePolicy::Fixed));
 
     QVBoxLayout* vLayoutContainer = new QVBoxLayout(this);
-    vLayoutContainer->setMargin(0);
+    vLayoutContainer->setContentsMargins(0, 0, 0, 0);
     vLayoutContainer->addWidget(bottomWidgetContainer);
 
     setLayout(vLayoutContainer);
@@ -269,8 +269,10 @@ void BottomWidget::durationChanged(qint64 duration)
     int s = duration % 60;
     int m = duration/60;
 
-    QString timeLabel;
-    timeLabel.sprintf("%.2d:%.2d.%.3d",m, s, ms);
+    auto timeLabel = QString{"%1:%2.%3"}
+        .arg(m, 2, 10, QLatin1Char{'0'})
+        .arg(s, 2, 10, QLatin1Char{'0'})
+        .arg(ms, 3, 10, QLatin1Char{'0'});
 
     labelTimeEnding->setText(timeLabel);
 
@@ -440,8 +442,10 @@ void BottomWidget::showPosition(int position)
     int s = position % 60;
     int m = position/60;
 
-    QString timeLabel;
-    timeLabel.sprintf("%.2d:%.2d.%.3d",m, s, ms);
+    auto timeLabel = QString{"%1:%2.%3"}
+        .arg(m, 2, 10, QLatin1Char{'0'})
+        .arg(s, 2, 10, QLatin1Char{'0'})
+        .arg(ms, 3, 10, QLatin1Char{'0'});
 
     labelTimeCurrent->setText(timeLabel);
 }

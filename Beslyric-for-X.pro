@@ -7,27 +7,29 @@
 QT       += core gui network widgets
 
 
-# For OpenSSL 1.1.1, we need Qt 5.12.4+.
-#   https://www.qt.io/blog/2019/06/17/qt-5-12-4-released-support-openssl-1-1-1
-#   https://github.com/BesLyric-for-X/BesLyric-for-X/issues/29
+# To use GCC 11.2.0+ in MinGW, we need Qt 6.2.2+.
+#   https://www.qt.io/blog/qt-6.2.2-released
 
 is_qt_version_too_low = false
 
-lessThan(QT_MAJOR_VERSION, 5) {
+lessThan(QT_MAJOR_VERSION, 6) {
     is_qt_version_too_low = true
 }
-else:equals(QT_MAJOR_VERSION, 5) {
-    lessThan(QT_MINOR_VERSION, 12) {
+else:equals(QT_MAJOR_VERSION, 6) {
+    lessThan(QT_MINOR_VERSION, 2) {
         is_qt_version_too_low = true
     }
-    else:equals(QT_MINOR_VERSION, 12):lessThan(QT_PATCH_VERSION, 4) {
+    else:equals(QT_MINOR_VERSION, 2):lessThan(QT_PATCH_VERSION, 2) {
         is_qt_version_too_low = true
     }
 }
 
 equals(is_qt_version_too_low, true) {
-    error("Qt version >= 5.12.4 is required, you are using $$[QT_VERSION].")
+    error("Qt version >= 6.2.2 is required, you are using $$[QT_VERSION].")
 }
+
+# Don't use any deprecated API.
+DEFINES *= QT_DISABLE_DEPRECATED_BEFORE=0x060202
 
 
 TARGET = BesLyric-for-X

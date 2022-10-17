@@ -3,6 +3,7 @@
 #include <QTextStream>
 #include <QStringList>
 #include <UnicodeReader.h>
+#include <QRegularExpression>
 #include "SettingManager.h"
 
 //载入原始的歌词数据
@@ -19,7 +20,7 @@ bool LyricMaker::loadRawLyric(QString lyricPath)
     rawLyricPath =lyricPath;
     isLyricChanged = false;
 
-    QRegExp sepRegExp = QRegExp("\n|\r");               //linux\mac\windows 换行符号
+    QRegularExpression sepRegExp{"\n|\r"};               //linux\mac\windows 换行符号
     QStringList lineList = content.split(sepRegExp);
 
     for(auto& line: lineList)
@@ -47,7 +48,7 @@ bool LyricMaker::saveLyrc(QString savePath)
     }
 
     QTextStream streamFileOut(&file);
-    streamFileOut.setCodec("UTF-8");
+    streamFileOut.setEncoding(QStringConverter::Encoding::Utf8);
     streamFileOut << lrcContent;
     streamFileOut.flush();
 
@@ -79,7 +80,7 @@ bool LyricMaker::saveToRawLyric()
     }
 
     QTextStream streamFileOut(&file);
-    streamFileOut.setCodec("UTF-8");
+    streamFileOut.setEncoding(QStringConverter::Encoding::Utf8);
     streamFileOut << rawLyricContent;
     streamFileOut.flush();
 
@@ -339,8 +340,10 @@ void LyricMaker::finishMaking()
         int s = time % 60;
         int m = time/60;
 
-        QString timeLabel;
-        timeLabel.sprintf("%.2d:%.2d.%.2d",m, s, ms / 10);
+        auto timeLabel = QString{"%1:%2.%3"}
+            .arg(m, 2, 10, QLatin1Char{'0'})
+            .arg(s, 2, 10, QLatin1Char{'0'})
+            .arg(ms / 10, 2, 10, QLatin1Char{'0'});
 
         QString oneline = "["+timeLabel+"]"+line.second + "\n";
         lrcContent.append(oneline);

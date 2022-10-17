@@ -1,7 +1,6 @@
 ﻿#include "LyricViewer.h"
 #include "global.h"
 #include <QFileInfo>
-#include <QRegExp>
 #include <BesMessageBox.h>
 #include <QSpacerItem>
 #include "LrcProcessor.h"

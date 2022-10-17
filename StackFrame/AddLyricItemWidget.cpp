@@ -62,7 +62,11 @@ void AddLyricItemWidget::initLayout()
     hLayout->addSpacerItem(new QSpacerItem(20* BesScaleUtil::scale(),20,QSizePolicy::MinimumExpanding,QSizePolicy::Fixed));
 
     QVBoxLayout* vMainLayout = new QVBoxLayout(this);
-    vMainLayout->setMargin(32* BesScaleUtil::scale());
+    vMainLayout->setContentsMargins(
+        32 * BesScaleUtil::scale(),
+        32 * BesScaleUtil::scale(),
+        32 * BesScaleUtil::scale(),
+        32 * BesScaleUtil::scale());
     vMainLayout->setSpacing(25* BesScaleUtil::scale());
     vMainLayout->addWidget(labelAddItemNameTip);
     vMainLayout->addWidget(editAddItemName);

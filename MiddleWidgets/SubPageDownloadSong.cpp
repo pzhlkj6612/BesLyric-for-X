@@ -177,7 +177,7 @@ void SubPageDownloadSong::OnSongResultChanged(LyricSearchResult result)
     //显示搜索结果
     int nCount = result.vecSongInfo.size();
     QString strResultTip = result.strUnexpectedResultTip;
-    labelNcmSongResultTip5->setText(QString().sprintf("，找到%d条歌曲记录。",nCount)+strResultTip);
+    labelNcmSongResultTip5->setText(QString{"，找到%1条歌曲记录。"}.arg(nCount) + strResultTip);
     labelNcmSongResultTip5->setVisible(true);
 
     if(result.vecSongInfo.size()!=0)

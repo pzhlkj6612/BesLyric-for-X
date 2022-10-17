@@ -55,7 +55,7 @@ void PageLyricList::initLayout()
     pageLyricListContainer = new QWidget(this);
     pageLyricListContainer->setMouseTracking(true);//详见 BesFramelessWidget.h 注释
     pageLyricListContainer->setObjectName("pageLyricListContainer");
-    mainLayout->setMargin(0);
+    mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->setSpacing(0);
     mainLayout->addWidget(pageLyricListContainer);
 
@@ -111,7 +111,7 @@ void PageLyricList::initLayout()
     lyricListCreated->setLyricLists(listData.listsCreated);
 
     //左侧控件布局
-    vListLayout->setMargin(0);
+    vListLayout->setContentsMargins(0, 0, 0, 0);
     vListLayout->addSpacerItem(new QSpacerItem(20,10* BesScaleUtil::scale(),QSizePolicy::Fixed, QSizePolicy::Fixed));
     vListLayout->addWidget(lyricListHistory);
     vListLayout->addWidget(headerListCreated);
@@ -136,7 +136,7 @@ void PageLyricList::initLayout()
     boxPagePreviewLyric->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
 
     QVBoxLayout* vLeftPanelLayout = new QVBoxLayout(lyriclistLeftPanel);
-    vLeftPanelLayout->setMargin(0);
+    vLeftPanelLayout->setContentsMargins(0, 0, 0, 0);
     vLeftPanelLayout->setSpacing(0);
     vLeftPanelLayout->addWidget(scrollAreaLeft);
     vLeftPanelLayout->addWidget(boxPagePreviewLyric);
@@ -190,7 +190,11 @@ void PageLyricList::initLayout()
     hLayoutTop->addWidget(labelListCoverRect);
     hLayoutTop->addLayout(vLayoutListInfo);
     hLayoutTop->setSpacing(25* BesScaleUtil::scale());
-    hLayoutTop->setMargin(30* BesScaleUtil::scale());
+    hLayoutTop->setContentsMargins(
+        30 * BesScaleUtil::scale(),
+        30 * BesScaleUtil::scale(),
+        30 * BesScaleUtil::scale(),
+        30 * BesScaleUtil::scale());
 
     tabpageLyricList = new  QTabWidget(pageLyricListContainer);
 
@@ -343,7 +347,7 @@ void PageLyricList::initLayout()
     QHBoxLayout* hMainLayout = new QHBoxLayout(pageLyricListContainer);
     hMainLayout->addWidget(lyriclistLeftPanel);
     hMainLayout->addWidget(lyriclistRightPanel);
-    hMainLayout->setMargin(0);
+    hMainLayout->setContentsMargins(0, 0, 0, 0);
     hMainLayout->setSpacing(0);
 }
 

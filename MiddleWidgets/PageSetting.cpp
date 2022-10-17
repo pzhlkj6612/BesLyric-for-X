@@ -25,7 +25,7 @@ void PageSetting::initLayout()
     pageSettingContainer = new QWidget(this);
     pageSettingContainer->setObjectName("pageSettingContainer");
     pageSettingContainer->setMouseTracking(true);//详见 BesFramelessWidget.h 注释
-    mainLayout->setMargin(0);
+    mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->setSpacing(0);
     mainLayout->addWidget(pageSettingContainer);
 
@@ -44,7 +44,11 @@ void PageSetting::initLayout()
     settingTitle->setText(tr("设置"));
 
     QHBoxLayout* hSettingLayout = new QHBoxLayout(settingTopPanel);
-    hSettingLayout->setMargin(10*BesScaleUtil::scale());
+    hSettingLayout->setContentsMargins(
+        10 * BesScaleUtil::scale(),
+        10 * BesScaleUtil::scale(),
+        10 * BesScaleUtil::scale(),
+        10 * BesScaleUtil::scale());
     hSettingLayout->addSpacerItem(new QSpacerItem(20,20,QSizePolicy::Fixed, QSizePolicy::Fixed));
     hSettingLayout->addWidget(settingTitle);
     hSettingLayout->addSpacerItem(new QSpacerItem(20,20,QSizePolicy::MinimumExpanding, QSizePolicy::Fixed));
@@ -54,7 +58,7 @@ void PageSetting::initLayout()
     settingWidget = new SettingWidget(pageSettingContainer);
     settingWidget->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
 
-    vMainLayout->setMargin(0);
+    vMainLayout->setContentsMargins(0, 0, 0, 0);
     vMainLayout->setSpacing(0);
     vMainLayout->addWidget(settingTopPanel);
     vMainLayout->addWidget(settingWidget);

@@ -166,7 +166,7 @@ void BesList::rowsMoved(const QModelIndex &parent, int start, int end, const QMo
     emit currentRowChanged(to);
 }
 
-void BesList::enterEvent(QEvent *event)
+void BesList::enterEvent(QEnterEvent *event)
 {
     setCursor(QCursor(Qt::ArrowCursor));
     QListWidget::enterEvent(event);
@@ -196,8 +196,7 @@ void BesList::startDrag(Qt::DropActions supportedActions)
                 for(QModelIndex index:indexes)
                     rowsSet.insert(index.row());
 
-                //QList<int> rows(rowsSet.begin(),rowsSet.end());  //This function was introduced in Qt 5.14
-                QList<int> rows = rowsSet.toList();
+                QList<int> rows{rowsSet.begin(), rowsSet.end()};
                 std::sort(rows.begin(),rows.end());
 
                 for(int row:rows)
