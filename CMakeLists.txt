@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10.2)
+cmake_minimum_required(VERSION 3.10.2)  # Ubuntu 18.04
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/.cmake")
 
@@ -6,10 +6,19 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/.cmake")
 project(BesLyric-for-X LANGUAGES CXX)
 
 
+set(APP_VERSION "3.2.0" CACHE STRING "App version number")
+set(GIT_COMMIT_SHA1 "0000000000000000000000000000000000000000" CACHE STRING "Git commit SHA-1 hash")
+option(DISABLE_QT_DEBUG_OUTPUT "Disable qDebug()" OFF)
+
 add_compile_definitions(
-        APP_VERSION="9.8.7"
-        GIT_COMMIT_SHA1="0000011111222223333344444555550000000000"
+        APP_VERSION=\"${APP_VERSION}\"
+        GIT_COMMIT_SHA1=\"${GIT_COMMIT_SHA1}\"
+        QT_DEPRECATED_WARNINGS
 )
+
+if (DISABLE_QT_DEBUG_OUTPUT)
+    add_compile_definitions(QT_NO_DEBUG_OUTPUT)
+endif ()
 
 
 set(CMAKE_CXX_STANDARD 14)
@@ -55,9 +64,6 @@ file(GLOB_RECURSE HEADERS
         ${PROJECT_SOURCE_DIR}/MyApplication.h
         ${PROJECT_SOURCE_DIR}/StackFrame.h
 
-        ${PROJECT_SOURCE_DIR}/BesWidgets/table/BesLListViewStyle.hpp
-        ${PROJECT_SOURCE_DIR}/Entities/MP3Editor/AlbumImageHelper.hpp
-
         ${PROJECT_SOURCE_DIR}/BesWidgets/*.h
         ${PROJECT_SOURCE_DIR}/BottomWidgets/*.h
         ${PROJECT_SOURCE_DIR}/Define/*.h
@@ -66,30 +72,52 @@ file(GLOB_RECURSE HEADERS
         ${PROJECT_SOURCE_DIR}/StackFrame/*.h
         ${PROJECT_SOURCE_DIR}/TopWidgets/*.h
         ${PROJECT_SOURCE_DIR}/Utility/*.h
+
+        ${PROJECT_SOURCE_DIR}/BesWidgets/table/BesLListViewStyle.hpp
+        ${PROJECT_SOURCE_DIR}/Entities/MP3Editor/AlbumImageHelper.hpp
         )
 
 qt5_wrap_cpp(HEADERS_MOC ${HEADERS})
 
 
+# Information for built binary file
+
 # Setting the Application Icon | Qt 5
 # https://doc.qt.io/qt-5/appicon.html
 
-# NOTE: Don't include the path in MACOSX_BUNDLE_ICON_FILE -- this is
-# the property added to Info.plist
-set(MACOSX_BUNDLE_ICON_FILE BesLyric.icns)
+if (APPLE)
+    # NOTE: Don't include the path in MACOSX_BUNDLE_ICON_FILE -- this is
+    # the property added to Info.plist
+    set(MACOSX_BUNDLE_ICON_FILE BesLyric.icns)
 
-# And this part tells CMake where to find and install the file itself
-set(APP_ICON_MACOSX ${PROJECT_SOURCE_DIR}/BesLyric.icns)
-set_source_files_properties(${APP_ICON_MACOSX} PROPERTIES
-        MACOSX_PACKAGE_LOCATION "Resources")
+    # And this part tells CMake where to find and install the file itself
+    set(APP_ICON_MACOSX ${PROJECT_SOURCE_DIR}/BesLyric.icns)
+    set_source_files_properties(${APP_ICON_MACOSX} PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
+endif ()
+
+if (WIN32)
+    set(ICON_FILENAME "Beslyric.ico")
+    set(VER_FILEVERSION "4,5,6")
+    set(VER_PRODUCTVERSION "6,7,8")
+    set(VER_COMPANYNAME_STR "BesStudio")
+    set(VER_FILEDESCRIPTION_STR "BesLyric-for-X is a lyric (.lrc) maker in the style of NetEase Cloud Music")
+    set(VER_FILEVERSION_STR "4.5.6")
+    set(VER_LEGALCOPYRIGHT_STR "copyleft (C) GPL")
+    set(VER_ORIGINALFILENAME_STR "${PROJECT_NAME}.exe")
+    set(VER_PRODUCTNAME_STR "BesLyric")
+    set(VER_PRODUCTVERSION_STR "6.7.8")
+
+    set(APP_RC_FILE ${CMAKE_CURRENT_BINARY_DIR}/BesLyric-for-X.rc)
+    configure_file(${PROJECT_SOURCE_DIR}/BesLyric-for-X.rc.in ${APP_RC_FILE} @ONLY)
+endif ()
 
 
 add_executable(${PROJECT_NAME} MACOSX_BUNDLE
+        ${APP_RC_FILE}
+        ${APP_ICON_MACOSX}
+        ${PROJECT_SOURCE_DIR}/resource.qrc
         ${SOURCES}
         ${HEADERS_MOC}
-        ${PROJECT_SOURCE_DIR}/resource.qrc
-        ${PROJECT_SOURCE_DIR}/BesLyric.rc
-        ${APP_ICON_MACOSX}
         )
 
 
