@@ -22,8 +22,9 @@ jobs:
     env:
       APP_NAME: BesLyric-for-X
 
-      SDL2_URL: "https://www.libsdl.org/release/SDL2-devel-2.0.16-VC.zip"
-      OPENSSL_URL: "http://wiki.overbyte.eu/arch/openssl-1.1.1l-win64.zip"
+      FFMPEG_URL: "https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2022-12-23-12-37/ffmpeg-n4.4.3-3-gb48951bd29-win64-gpl-shared-4.4.zip"
+      SDL2_URL: "https://www.libsdl.org/release/SDL2-devel-2.0.22-VC.zip"
+      OPENSSL_URL: "http://wiki.overbyte.eu/arch/openssl-1.1.1s-win64.zip"
       CQTDEPLOYER_URL: "https://github.com/QuasarApp/CQtDeployer/releases/download/1.4.7/WindowsOfflineInstaller.exe"
       INNO_SETUP_URL: "https://files.jrsoftware.org/is/6/innosetup-6.0.5.exe"
       EVB_URL: "https://enigmaprotector.com/assets/files/enigmavb.exe"
@@ -56,26 +57,18 @@ jobs:
         include:
           - qt_ver: 5.15.2
             qt_arch: win64_mingw81
-            qt_tools: "tools_mingw,8.1.0,qt.tools.win64_mingw810"
+            qt_tools: "tools_mingw,qt.tools.win64_mingw810"
             qt_tool_mingw_dir_name: mingw810_64
-            ffmpeg_ver: 4.4
-            ffmpeg_provider: "BtbN"
-          - qt_ver: 5.15.2
-            qt_arch: win64_mingw81
-            qt_tools: "tools_mingw,8.1.0,qt.tools.win64_mingw810"
-            qt_tool_mingw_dir_name: mingw810_64
-            ffmpeg_ver: 4.4
-            ffmpeg_provider: "gyan.dev"
 
     steps:
       - name: What time?
         id: my_luminous_watch
-        uses: 1466587594/get-current-time@v2
+        uses: josStorer/get-current-time@v2.0.2
         with:
           format: "YYYYMMDDHHmmss"
 
-      # Fetch all history for all tags and branches.
-      - uses: actions/checkout@v2
+      # TODO: Don't fetch all history for all tags and branches.
+      - uses: actions/checkout@v3.2.0
         with:
           fetch-depth: 0
 
@@ -89,6 +82,7 @@ jobs:
         if: ${{ runner.os == 'Windows' }}
         run: git submodule update --init --depth=1 --recursive -- .deploy-package/Windows
 
+      # TODO: use GHA stuff, don't write those code.
       - name: Get commit SHA1 and version number from git
         id: getGitInfo
         run: |
@@ -99,10 +93,10 @@ jobs:
           Write-Output -InputObject "gitCommitSha1 = ${gitCommitSha1}"
           Write-Output -InputObject "versionNumber = ${versionNumber}"
             
-          Write-Output -InputObject `
-            "::set-output name=gitCommitSha1::${gitCommitSha1}"
-          Write-Output -InputObject `
-            "::set-output name=versionNumber::${versionNumber}"
+          Write-Output -InputObject "gitCommitSha1=${gitCommitSha1}" | `
+            Out-File -FilePath ${Env:\GITHUB_OUTPUT} -Encoding utf8 -Append
+          Write-Output -InputObject "versionNumber=${versionNumber}" | `
+            Out-File -FilePath ${Env:\GITHUB_OUTPUT} -Encoding utf8 -Append
 
       - name: Create directories
         run: |
@@ -121,27 +115,42 @@ jobs:
           New-Item -Force -Path '${{ env.SDL2_DECOMPRESS_DIR_PATH }}' -ItemType 'Directory'
           New-Item -Force -Path '${{ env.OPENSSL_DECOMPRESS_DIR_PATH }}' -ItemType 'Directory'
 
+      # ==============================================================
+      # ----- Get information about third-party library packages -----
+
+      - name: Get FFmpeg Info
+        id: get_ffmpeg_info
+        run: |
+          ${versionInfo} = ( '${{ env.FFMPEG_URL }}' | `
+            Select-String `
+              -CaseSensitive `
+              -Pattern '/ffmpeg-n(\d.+)-win64-gpl-shared' ).Matches.Groups[1].Value
+
+          Write-Output -InputObject "versionInfo = ${versionInfo}"
+
+          Write-Output -InputObject "versionInfo=${versionInfo}" | `
+            Out-File -FilePath ${Env:\GITHUB_OUTPUT} -Encoding utf8 -Append
+
       # =================================================
       # ----- Download third-party library packages -----
 
       - name: Download FFmpeg
         id: download_ffmpeg
-        uses: pzhlkj6612/action-ffmpeg-windows-shared-build-on-github-downloader@master
+        uses: carlosperate/download-file-action@v2.0.0
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          provider: ${{ matrix.ffmpeg_provider }}
-          filename_version: ${{ matrix.ffmpeg_ver }}
+          file-url: ${{ env.FFMPEG_URL }}
+          location: ${{ env.DOWNLOAD_DIR_PATH }}
 
       - name: Download SDL2
         id: download_sdl2
-        uses: carlosperate/download-file-action@v1.0.3
+        uses: carlosperate/download-file-action@v2.0.0
         with:
           file-url: ${{ env.SDL2_URL }}
           location: ${{ env.DOWNLOAD_DIR_PATH }}
 
       - name: Download OpenSSL
         id: download_openssl
-        uses: carlosperate/download-file-action@v1.0.3
+        uses: carlosperate/download-file-action@v2.0.0
         with:
           file-url: ${{ env.OPENSSL_URL }}
           location: ${{ env.DOWNLOAD_DIR_PATH }}
@@ -153,13 +162,14 @@ jobs:
         id: decompress_ffmpeg
         run: |
           Expand-Archive -PassThru `
-            -Path '${{ steps.download_ffmpeg.outputs.filePath }}' `
+            -Path '${{ steps.download_ffmpeg.outputs.file-path }}' `
             -DestinationPath '${{ env.FFMPEG_DECOMPRESS_DIR_PATH }}'
 
           Push-Location -Path '${{ env.FFMPEG_DECOMPRESS_DIR_PATH }}\ffmpeg-*'
 
           Get-ChildItem -Path '.'
-          Write-Output -InputObject "::set-output name=dirPath::$(Get-Location)"
+          Write-Output -InputObject "dirPath=$(Get-Location)" | `
+            Out-File -FilePath ${Env:\GITHUB_OUTPUT} -Encoding utf8 -Append
 
           Pop-Location
 
@@ -173,7 +183,8 @@ jobs:
           Push-Location -Path '${{ env.SDL2_DECOMPRESS_DIR_PATH }}\SDL2-*'
 
           Get-ChildItem -Path '.'
-          Write-Output -InputObject "::set-output name=dirPath::$(Get-Location)"
+          Write-Output -InputObject "dirPath=$(Get-Location)" | `
+            Out-File -FilePath ${Env:\GITHUB_OUTPUT} -Encoding utf8 -Append
 
           Pop-Location
 
@@ -187,7 +198,8 @@ jobs:
           Push-Location -Path '${{ env.OPENSSL_DECOMPRESS_DIR_PATH }}'
 
           Get-ChildItem -Path '.'
-          Write-Output -InputObject "::set-output name=dirPath::$(Get-Location)"
+          Write-Output -InputObject "dirPath=$(Get-Location)" | `
+            Out-File -FilePath ${Env:\GITHUB_OUTPUT} -Encoding utf8 -Append
 
           Pop-Location
 
@@ -235,7 +247,7 @@ jobs:
 
           Pop-Location
 
-      - name: Put SDL2 files into B4X_DEP_PATH
+      - name: Copy SDL2 files to B4X_DEP_PATH
         run: |
           Push-Location -Path '${{ steps.decompress_sdl2.outputs.dirPath }}'
 
@@ -271,21 +283,21 @@ jobs:
       - name: Download CQtDeployer
         if: ${{ false }}
         id: download_cqt
-        uses: carlosperate/download-file-action@v1.0.3
+        uses: carlosperate/download-file-action@v2.0.0
         with:
           file-url: ${{ env.CQTDEPLOYER_URL }}
           location: ${{ env.DOWNLOAD_DIR_PATH }}
 
       - name: Download Inno Setup
         id: download_iss
-        uses: carlosperate/download-file-action@v1.0.3
+        uses: carlosperate/download-file-action@v2.0.0
         with:
           file-url: ${{ env.INNO_SETUP_URL }}
           location: ${{ env.DOWNLOAD_DIR_PATH }}
 
       - name: Download Enigma Virtual Box
         id: download_evb
-        uses: carlosperate/download-file-action@v1.0.3
+        uses: carlosperate/download-file-action@v2.0.0
         with:
           file-url: ${{ env.EVB_URL }}
           location: ${{ env.DOWNLOAD_DIR_PATH }}
@@ -377,20 +389,13 @@ jobs:
       # ====================
       # ----- Setup Qt -----
 
-      - name: Cache Qt
-        id: cache-qt
-        uses: actions/cache@v1
-        with:
-          path: ${{ github.workspace }}/../Qt
-          key: QtCache-windows-2019-mingw-${{ matrix.ffmpeg_provider }}-${{ matrix.ffmpeg_ver }}-${{ matrix.qt_ver }}-${{ matrix.qt_arch }}
-
       - name: Install Qt
-        uses: jurplel/install-qt-action@v2.13.0
+        uses: jurplel/install-qt-action@v3.0.0
         with:
           version: ${{ matrix.qt_ver }}
           target: desktop
           arch: ${{ matrix.qt_arch }}
-          cached: ${{ steps.cache-qt.outputs.cache-hit }}
+          cache: true
           tools: ${{ matrix.qt_tools }}
 
       - name: Find Qt 5
@@ -418,10 +423,10 @@ jobs:
         run: |
           Write-Output -InputObject ${Env:\Path}
 
-          Get-Command -Name 'qmake.exe' | Format-List
-          & 'qmake.exe' '-query'
+          Get-Command -Name 'cmake.exe' | Format-List
+          & 'cmake.exe' '--version'
           if (${LASTEXITCODE} -ne 0) {
-            throw "qmake.exe failed: ${LASTEXITCODE}"
+            throw "cmake.exe failed: ${LASTEXITCODE}"
           }
 
           Get-Command -Name 'mingw32-make.exe' | Format-List
@@ -435,45 +440,28 @@ jobs:
 
       - name: Build ${{ steps.getGitInfo.outputs.versionNumber }}+${{ steps.getGitInfo.outputs.gitCommitSha1 }}
         run: |
-          if (Test-Path -Path '.qmake.stash' -PathType Leaf) {
-            Remove-Item -Path '.qmake.stash'
-          }
-
-          & 'qmake.exe' @(
-            , '-makefile'
-            , '-o', 'Makefile'
-            , '-spec', 'win32-g++'
-            , '-before'
-            , 'CONFIG*=force_debug_info'
-            , 'CONFIG*=separate_debug_info'
-            , 'GIT_COMMIT_SHA1=${{ steps.getGitInfo.outputs.gitCommitSha1 }}'
-            , 'APP_VERSION=${{ steps.getGitInfo.outputs.versionNumber }}'
-            , 'B4X_DEP_PATH=${{ env.B4X_DEP_PATH }}'
-            , '-after'
-            , 'TARGET=${{ env.APP_NAME }}'
-            , 'CONFIG+=release'
-            , '${{ github.workspace }}'
+          & 'cmake.exe' @(
+            , '-G', 'MinGW Makefiles'
+            , '-D', 'CMAKE_BUILD_TYPE=RelWithDebInfo'
+            , '-D', 'CMAKE_PREFIX_PATH=${{ env.Qt_DIR }};${{ env.B4X_DEP_PATH }}'
+            , '-D', 'CMAKE_INSTALL_PREFIX=${{ env.MAKE_INSTALL_DIR_PATH }}'
+            , '-D', 'GIT_COMMIT_SHA1=${{ steps.getGitInfo.outputs.gitCommitSha1 }}'
+            , '-D', 'APP_VERSION=${{ steps.getGitInfo.outputs.versionNumber }}'
+            , '-S', '${{ github.workspace }}'
+            , '-B', '${{ github.workspace }}/build'
           )
           if (${LASTEXITCODE} -ne 0) {
-            throw "qmake.exe failed: ${LASTEXITCODE}"
+            throw "cmake.exe generation failed: ${LASTEXITCODE}"
           }
 
           # https://stackoverflow.com/questions/39274324/get-total-number-of-cores-from-a-computer-without-hyperthreading
-          & 'mingw32-make.exe' @(
-            , '-f', 'Makefile'
-            , 'release'
-            , "-j$((Get-CimInstance -ClassName 'Win32_ComputerSystem').NumberOfLogicalProcessors)"
+          & 'cmake.exe' @(
+            , '--build', '${{ github.workspace }}/build'
+            , '-j', "$((Get-CimInstance -ClassName 'Win32_ComputerSystem').NumberOfLogicalProcessors)"
+            , '--target', 'install'
           )
           if (${LASTEXITCODE} -ne 0) {
-            throw "mingw32-make.exe failed: ${LASTEXITCODE}"
-          }
-
-          & 'mingw32-make.exe' @(
-            , 'install'
-            , 'INSTALL_ROOT=${{ env.MAKE_INSTALL_DIR_PATH }}'
-          )
-          if (${LASTEXITCODE} -ne 0) {
-            throw "mingw32-make.exe install failed: ${LASTEXITCODE}"
+            throw "cmake.exe installation failed: ${LASTEXITCODE}"
           }
 
           Get-ChildItem -Recurse -Path '${{ env.MAKE_INSTALL_DIR_PATH }}' | FL
@@ -532,30 +520,23 @@ jobs:
 
           & '${{ github.workspace }}\.deploy-package\Windows\package\call_evbconsole.ps1' @evbParams
 
-      - name: Upload debug info
-        uses: actions/upload-artifact@v2
-        with:
-          if-no-files-found: error
-          name: "${{ steps.my_luminous_watch.outputs.formattedTime }}-Windows_MinGW-${{ matrix.qt_ver }}-${{ matrix.ffmpeg_provider }}_${{ matrix.ffmpeg_ver }}-debugInfo"
-          path: "${{ env.MAKE_INSTALL_DIR_PATH }}/${{ env.APP_NAME }}.exe.debug"
-
       - name: Upload zip
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3.1.1
         with:
           if-no-files-found: error
-          name: "${{ steps.my_luminous_watch.outputs.formattedTime }}-Windows_MinGW-${{ matrix.qt_ver }}-${{ matrix.ffmpeg_provider }}_${{ matrix.ffmpeg_ver }}-zip"
+          name: "${{ steps.my_luminous_watch.outputs.formattedTime }}-Windows_MinGW-${{ matrix.qt_ver }}_${{ matrix.qt_arch }}-${{ steps.get_ffmpeg_info.outputs.versionInfo }}-zip"
           path: "${{ env.DEPLOY_OUTPUT_PATH }}/**/*"
 
       - name: Upload Inno Setup installer
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3.1.1
         with:
           if-no-files-found: error
-          name: "${{ steps.my_luminous_watch.outputs.formattedTime }}-Windows_MinGW-${{ matrix.qt_ver }}-${{ matrix.ffmpeg_provider }}_${{ matrix.ffmpeg_ver }}-innoSetup"
+          name: "${{ steps.my_luminous_watch.outputs.formattedTime }}-Windows_MinGW-${{ matrix.qt_ver }}_${{ matrix.qt_arch }}-${{ steps.get_ffmpeg_info.outputs.versionInfo }}-innoSetup"
           path: "${{ env.PACKAGE_OUTPUT_PATH }}/${{ env.APP_NAME }}_${{ steps.getGitInfo.outputs.versionNumber }}.exe"
 
       - name: Upload Enigma Virtual Box boxed exe
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3.1.1
         with:
           if-no-files-found: error
-          name: "${{ steps.my_luminous_watch.outputs.formattedTime }}-Windows_MinGW-${{ matrix.qt_ver }}-${{ matrix.ffmpeg_provider }}_${{ matrix.ffmpeg_ver }}-evb"
+          name: "${{ steps.my_luminous_watch.outputs.formattedTime }}-Windows_MinGW-${{ matrix.qt_ver }}_${{ matrix.qt_arch }}-${{ steps.get_ffmpeg_info.outputs.versionInfo }}-evb"
           path: "${{ env.PACKAGE_OUTPUT_PATH }}/${{ env.APP_NAME }}_${{ steps.getGitInfo.outputs.versionNumber }}_boxed.exe"

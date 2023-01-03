@@ -25,22 +25,21 @@ jobs:
       MAKE_INSTALL_DIR_PATH: ${{ github.workspace }}/${{ github.run_id }}/build
       PACKAGE_DIR_PATH: ${{ github.workspace }}/${{ github.run_id }}/package
 
-    runs-on: macos-10.15
-    continue-on-error: ${{ matrix.experimental }}
+    runs-on: macos-11
+    continue-on-error: false
     strategy:
       matrix:
         xcode_ver: [11.7] # Only one!
         qt_ver: [5.15.2]
-        experimental: [false]
     steps:
       - name: What time?
         id: my_luminous_watch
-        uses: 1466587594/get-current-time@v2
+        uses: josStorer/get-current-time@v2.0.2
         with:
           format: "YYYYMMDDHHmmss"
 
-      # Fetch all history for all tags and branches.
-      - uses: actions/checkout@v2
+      # TODO: Don't fetch all history for all tags and branches.
+      - uses: actions/checkout@v3.2.0
         with:
           fetch-depth: 0
 
@@ -54,6 +53,7 @@ jobs:
         if: ${{ runner.os == 'Windows' }}
         run: git submodule update --init --depth=1 --recursive -- .deploy-package/Windows
 
+      # TODO: use GHA stuff, don't write those code.
       - name: Get commit SHA1 and version number from git
         id: getGitInfo
         run: |
@@ -66,8 +66,8 @@ jobs:
           echo "gitCommitSha1 = ${gitCommitSha1}"
           echo "versionNumber = ${versionNumber}"
 
-          echo "::set-output name=gitCommitSha1::${gitCommitSha1}"
-          echo "::set-output name=versionNumber::${versionNumber}"
+          echo "gitCommitSha1=${gitCommitSha1}" >>$GITHUB_OUTPUT
+          echo "versionNumber=${versionNumber}" >>$GITHUB_OUTPUT
 
       - name: Create directories
         run: |
@@ -76,7 +76,7 @@ jobs:
 
       # Choose the latest supported SDK
       #   https://doc.qt.io/qt-5/macos.html#supported-versions
-      #   https://github.com/actions/virtual-environments/blob/main/images/macos/macos-10.15-Readme.md#xcode
+      #   https://github.com/actions/runner-images/blob/main/images/macos/macos-11-Readme.md#xcode
       - name: Use Xcode Command Line Tools ${{ matrix.xcode_ver }}
         run: |
           xcode-select --print-path
@@ -86,69 +86,68 @@ jobs:
           xcode-select --print-path
           clang++ -v
 
-      - run: brew install sdl2 ffmpeg pkg-config
+      - name: brew install 3rd party libs
+        id: brew3rdLibs
+        run: |
+          brew install sdl2 ffmpeg@4
 
-      - name: Cache Qt
-        id: cache_qt
-        uses: actions/cache@v1
-        with:
-          path: ${{ github.workspace }}/../Qt
-          key: QtCache-macos-10.15-${{ matrix.qt_ver }}
+          sdl2_path_link="$(brew --prefix --installed sdl2)"
+          sdl2_path="$(dirname ${sdl2_path_link})/$(readlink ${sdl2_path_link})"
+
+          ffmpeg_path_link="$(brew --prefix --installed ffmpeg@4)"
+          ffmpeg_path="$(dirname ${ffmpeg_path_link})/$(readlink ${ffmpeg_path_link})"
+
+          echo "dirPath_ffmpeg=${ffmpeg_path}" >>$GITHUB_OUTPUT
+          echo "dirPath_sdl2=${sdl2_path}" >>$GITHUB_OUTPUT
 
       - name: Install Qt
-        uses: jurplel/install-qt-action@v2.13.0
+        uses: jurplel/install-qt-action@v3.0.0
         with:
           version: ${{ matrix.qt_ver }}
           target: desktop
-          cached: ${{ steps.cache_qt.outputs.cache-hit }}
+          cache: true
 
       - name: Find Qt 5
         if: ${{ startsWith(matrix.qt_ver, '5') }}
         run: |
           echo 'Qt5_DIR = ${{ env.Qt5_DIR }}'
-          echo 'Qt_DIR=${{ env.Qt5_DIR }}' >> ${GITHUB_ENV}
+          echo 'Qt_DIR=${{ env.Qt5_DIR }}' >>$GITHUB_ENV
 
       - name: Find Qt 6
         if: ${{ startsWith(matrix.qt_ver, '6') }}
         run: |
           echo 'Qt6_DIR = ${{ env.Qt6_DIR }}'
-          echo 'Qt_DIR=${{ env.Qt6_DIR }}' >> ${GITHUB_ENV}
+          echo 'Qt_DIR=${{ env.Qt6_DIR }}' >>$GITHUB_ENV
 
       - name: Configure Qt env
         run: |
-          echo '${{ env.Qt_DIR }}/bin' >> ${GITHUB_PATH}
+          echo '${{ env.Qt_DIR }}/bin' >>$GITHUB_PATH
 
       - name: Test Qt & env
         run: |
           echo ${PATH}
 
-          which 'qmake'
+          which 'cmake'
 
-          qmake '-query'
+          cmake '--version'
 
       - name: Build ${{ steps.getGitInfo.outputs.versionNumber }}+${{ steps.getGitInfo.outputs.gitCommitSha1 }}
         run: |
-          [[ -f '.qmake.stash' ]] && rm '.qmake.stash'
-
-          qmake \
-            '-makefile' \
-            '-o' 'Makefile' \
-            '-spec' 'macx-clang' \
-            '-before' \
-            'CONFIG*=force_debug_info' \
-            'CONFIG*=separate_debug_info' \
-            'GIT_COMMIT_SHA1=${{ steps.getGitInfo.outputs.gitCommitSha1 }}' \
-            'APP_VERSION=${{ steps.getGitInfo.outputs.versionNumber }}' \
-            '-after' \
-            'TARGET=${{ env.APP_NAME }}' \
-            'CONFIG+=release' \
-            '${{ github.workspace }}'
+          cmake \
+            -D 'CMAKE_BUILD_TYPE=RelWithDebInfo' \
+            -D 'CMAKE_PREFIX_PATH=${{ env.Qt_DIR }};${{ steps.brew3rdLibs.outputs.dirPath_ffmpeg }};${{ steps.brew3rdLibs.outputs.dirPath_sdl2 }}' \
+            -D 'CMAKE_INSTALL_PREFIX=${{ env.MAKE_INSTALL_DIR_PATH }}' \
+            -D 'GIT_COMMIT_SHA1=${{ steps.getGitInfo.outputs.gitCommitSha1 }}' \
+            -D 'APP_VERSION=${{ steps.getGitInfo.outputs.versionNumber }}' \
+            -S '${{ github.workspace }}' \
+            -B '${{ github.workspace }}/build'
 
           # nproc is not a command on Mac · Issue #33 · memkind/memkind
           #   https://github.com/memkind/memkind/issues/33#issuecomment-540614162
-          make -j$(sysctl -n hw.logicalcpu)
-
-          make install INSTALL_ROOT='${{ env.MAKE_INSTALL_DIR_PATH }}'
+          cmake \
+            --build '${{ github.workspace }}/build' \
+            -j $(sysctl -n hw.logicalcpu) \
+            --target install
 
           du -ach '${{ env.MAKE_INSTALL_DIR_PATH }}'
 
@@ -178,22 +177,15 @@ jobs:
           popd
 
       - name: Upload legacy dmg
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3.1.1
         with:
           if-no-files-found: error
           name: "${{ steps.my_luminous_watch.outputs.formattedTime }}-macOS-${{ matrix.qt_ver }}-legacy_dmg"
           path: "${{ env.PACKAGE_DIR_PATH }}/${{ env.APP_NAME }}_${{ steps.getGitInfo.outputs.versionNumber }}_legacy.dmg"
 
       - name: Upload dmg
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3.1.1
         with:
           if-no-files-found: error
           name: "${{ steps.my_luminous_watch.outputs.formattedTime }}-macOS-${{ matrix.qt_ver }}-dmg"
           path: "${{ env.PACKAGE_DIR_PATH }}/${{ env.APP_NAME }}_${{ steps.getGitInfo.outputs.versionNumber }}.dmg"
-
-      - name: Upload debug info
-        uses: actions/upload-artifact@v2
-        with:
-          if-no-files-found: error
-          name: "${{ steps.my_luminous_watch.outputs.formattedTime }}-macOS-${{ matrix.qt_ver }}-dSYM"
-          path: "${{ env.MAKE_INSTALL_DIR_PATH }}/${{ env.APP_NAME }}.app.dSYM"

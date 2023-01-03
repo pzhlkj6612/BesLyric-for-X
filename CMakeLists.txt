@@ -184,6 +184,12 @@ else ()
 endif ()
 
 
+# For PDB
+if (MSVC)
+    install(FILES $<TARGET_PDB_FILE:${PROJECT_NAME}> DESTINATION ./)
+endif ()
+
+
 # For AppImage.
 #   INSTALL_ROOT=AppDir
 if (UNIX AND (NOT APPLE))
