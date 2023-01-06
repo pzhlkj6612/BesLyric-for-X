@@ -190,6 +190,22 @@ if (MSVC)
 endif ()
 
 
+# For dSYM
+# from: Separate debug information (#20256) · Issues · CMake / CMake · GitLab
+#       https://gitlab.kitware.com/cmake/cmake/-/issues/20256
+if (APPLE)
+    find_program(DSYMUTIL_PROGRAM dsymutil)
+    if (NOT DSYMUTIL_PROGRAM)
+        message(FATAL_ERROR "dsymutil not found")
+    endif ()
+    foreach (lang C CXX)
+        foreach (var LINK_EXECUTABLE CREATE_SHARED_LIBRARY)
+            list(APPEND CMAKE_${lang}_${var} "${DSYMUTIL_PROGRAM} '${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.app/Contents/MacOS/${PROJECT_NAME}'")
+        endforeach ()
+    endforeach ()
+endif ()
+
+
 # For AppImage.
 #   INSTALL_ROOT=AppDir
 if (UNIX AND (NOT APPLE))

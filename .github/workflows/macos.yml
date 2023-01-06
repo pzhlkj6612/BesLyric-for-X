@@ -148,6 +148,12 @@ jobs:
             --build '${{ github.workspace }}/build' \
             -j $(sysctl -n hw.logicalcpu) \
             --target install
+          
+          echo '--------------/build---------------'
+
+          find '${{ github.workspace }}/build'
+          
+          echo '------------MAKE_INSTALL_DIR_PATH-------------'
 
           du -ach '${{ env.MAKE_INSTALL_DIR_PATH }}'
 
