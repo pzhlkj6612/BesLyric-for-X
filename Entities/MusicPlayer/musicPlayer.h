@@ -76,7 +76,7 @@ typedef struct PacketQueue {
 
 
 class PlayThread;
-typedef struct{
+struct mediaState {
     AVFormatContext* fct; //格式上下文
 
     AVFrame *wanted_frame;//音频目标帧
@@ -104,7 +104,7 @@ typedef struct{
         playThread = nullptr;
 	}
 
-}mediaState;
+};
 
 
 //播放音乐使用的线程
