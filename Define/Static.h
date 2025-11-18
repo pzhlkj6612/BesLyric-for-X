@@ -8,7 +8,15 @@ X表示主版本，架构性修改时更新
 Y表示次版本，较大修改时更新
 Z表示修改号，小问题时更新
 */
-static const QString VERSION_NUMBER = APP_VERSION;
+static const QString VERSION_NUMBER = B4X_APP_VERSION;
+
+static const QString GIT_COMMIT_SHA1 = B4X_GIT_COMMIT_SHA1;
+
+#if defined(B4X_RELEASE_BUILD)
+static const bool RELEASE_BUILD = true;
+#else
+static const bool RELEASE_BUILD = false;
+#endif
 
 static const QString LINK_SEND_LOGIN = "http://beslyric.320.io/BesBlog/beslyric/login.action";
 

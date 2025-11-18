@@ -14,18 +14,17 @@ endif ()
 project(BesLyric-for-X LANGUAGES CXX)
 
 
-set(APP_VERSION "3.2.0" CACHE STRING "App version number")
-set(GIT_COMMIT_SHA1 "0000000000000000000000000000000000000000" CACHE STRING "Git commit SHA-1 hash")
-option(DISABLE_QT_DEBUG_OUTPUT "Disable qDebug()" OFF)
+set(B4X_APP_VERSION "0.0.0" CACHE STRING "App version number")
+set(B4X_GIT_COMMIT_SHA1 "0000000000000000000000000000000000000000" CACHE STRING "Git commit SHA-1 hash")
+set(B4X_RELEASE_BUILD OFF CACHE BOOL "The current build is for releasing, also disable qDebug() by setting QT_NO_DEBUG_OUTPUT")
 
 add_compile_definitions(
-    APP_VERSION=\"${APP_VERSION}\"
-    GIT_COMMIT_SHA1=\"${GIT_COMMIT_SHA1}\"
-    QT_DEPRECATED_WARNINGS
+    B4X_APP_VERSION=\"${B4X_APP_VERSION}\"
+    B4X_GIT_COMMIT_SHA1=\"${B4X_GIT_COMMIT_SHA1}\"
 )
 
-if (DISABLE_QT_DEBUG_OUTPUT)
-    add_compile_definitions(QT_NO_DEBUG_OUTPUT)
+if (B4X_RELEASE_BUILD)
+    add_compile_definitions(QT_NO_DEBUG_OUTPUT B4X_RELEASE_BUILD)
 endif ()
 
 

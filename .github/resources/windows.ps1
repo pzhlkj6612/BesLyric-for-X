@@ -2,6 +2,7 @@
 param (
     [Parameter(Mandatory = $true)][string]$VERSION_NUMBER,
     [Parameter(Mandatory = $true)][string]$GIT_COMMIT,
+    [Parameter(Mandatory = $true)][string]$RELEASE_BUILD,
 
     [Parameter(Mandatory = $true)][string]$GITHUB_ENV,
 
@@ -18,6 +19,9 @@ param (
 #   - PACKAGE_ZIP_FILE_PATH
 #   - PACKAGE_INNOSETUP_FILE_PATH
 #   - PACKAGE_EVB_FILE_PATH
+
+
+Write-Host "Windows script for $VERSION_NUMBER + $GIT_COMMIT (RELEASE? $RELEASE_BUILD)"
 
 
 $ErrorActionPreference = 'Stop'
@@ -291,8 +295,9 @@ function Build-MSVCApp {
         , '-A', 'x64'
         , '-D', "CMAKE_PREFIX_PATH=$B4X_DEP_PATH"
         , '-D', "CMAKE_INSTALL_PREFIX=$installDir"
-        , '-D', "GIT_COMMIT_SHA1=$GIT_COMMIT"
-        , '-D', "APP_VERSION=$VERSION_NUMBER"
+        , '-D', "B4X_GIT_COMMIT_SHA1=$GIT_COMMIT"
+        , '-D', "B4X_APP_VERSION=$VERSION_NUMBER"
+        , '-D', "B4X_RELEASE_BUILD=$RELEASE_BUILD"
         , '-S', $repoDir
         , '-B', $buildDir
     )
@@ -324,8 +329,9 @@ function Build-MinGWApp {
         , '-D', 'CMAKE_BUILD_TYPE=RelWithDebInfo'
         , '-D', "CMAKE_PREFIX_PATH=$B4X_DEP_PATH"
         , '-D', "CMAKE_INSTALL_PREFIX=$installDir"
-        , '-D', "GIT_COMMIT_SHA1=$GIT_COMMIT"
-        , '-D', "APP_VERSION=$VERSION_NUMBER"
+        , '-D', "B4X_GIT_COMMIT_SHA1=$GIT_COMMIT"
+        , '-D', "B4X_APP_VERSION=$VERSION_NUMBER"
+        , '-D', "B4X_RELEASE_BUILD=$RELEASE_BUILD"
         , '-S', $repoDir
         , '-B', $buildDir
     )

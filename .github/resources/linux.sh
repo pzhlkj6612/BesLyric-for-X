@@ -1,15 +1,14 @@
 #!/bin/bash
 
 
-set -ex
-set -u
+set -exu
 
 
 # set env:
 #   - PACKAGE_APPIMAGE_FILE_PATH
 
 
-echo "Linux script for $VERSION_NUMBER + $GIT_COMMIT"
+echo "Linux script for $VERSION_NUMBER + $GIT_COMMIT (RELEASE? $RELEASE_BUILD)"
 
 
 echo "Check $GITHUB_ENV"
@@ -47,8 +46,9 @@ install_dir="$(mktemp -d)"
 cmake \
     -D 'CMAKE_BUILD_TYPE=RelWithDebInfo' \
     -D "CMAKE_INSTALL_PREFIX=$install_dir" \
-    -D "GIT_COMMIT_SHA1=$GIT_COMMIT" \
-    -D "APP_VERSION=$VERSION_NUMBER" \
+    -D "B4X_GIT_COMMIT_SHA1=$GIT_COMMIT" \
+    -D "B4X_APP_VERSION=$VERSION_NUMBER" \
+    -D "B4X_RELEASE_BUILD=$RELEASE_BUILD" \
     -S "$repo_dir" \
     -B "$build_dir"
 
